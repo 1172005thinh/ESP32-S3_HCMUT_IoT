@@ -40,6 +40,15 @@ void temp_humi_monitor(void *pvParameters){
             xSemaphoreGive(xSemCriticalTemp);
         }
 
+        // Task 2: Check humidity conditions and give semaphores
+        if (humidity < 40.0) {
+            xSemaphoreGive(xSemLowHumi);
+        } else if (humidity >= 40.0 && humidity <= 60.0) {
+            xSemaphoreGive(xSemNormalHumi);
+        } else {
+            xSemaphoreGive(xSemHighHumi);
+        }
+
         // Print the results
         
         Serial.print("Humidity: ");

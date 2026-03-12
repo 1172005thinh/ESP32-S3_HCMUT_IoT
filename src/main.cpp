@@ -24,6 +24,11 @@ void setup()
   xSemWarningTemp = xSemaphoreCreateBinary();
   xSemCriticalTemp = xSemaphoreCreateBinary();
 
+  // Initialize Task 2 Semaphores
+  xSemLowHumi = xSemaphoreCreateBinary();
+  xSemNormalHumi = xSemaphoreCreateBinary();
+  xSemHighHumi = xSemaphoreCreateBinary();
+
   xTaskCreate(led_blinky, "Task LED Blink", 2048, NULL, 2, NULL);
   xTaskCreate(neo_blinky, "Task NEO Blink", 2048, NULL, 2, NULL);
   xTaskCreate(temp_humi_monitor, "Task TEMP HUMI Monitor", 2048, NULL, 2, NULL);

@@ -57,3 +57,8 @@ Thumbs.db
 
 # Gemini CLI local documentation
 GEMINI.md
+
+# Wokwi Simulation
+diagram.json
+wokwi.toml
+

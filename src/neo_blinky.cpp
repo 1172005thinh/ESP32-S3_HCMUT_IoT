@@ -1,5 +1,5 @@
 #include "neo_blinky.h"
-
+#include "global.h"
 
 void neo_blinky(void *pvParameters){
 
@@ -9,18 +9,35 @@ void neo_blinky(void *pvParameters){
     strip.clear();
     strip.show();
 
+    int current_state = 1; // 0: Low, 1: Normal, 2: High
+
     while(1) {                          
-        strip.setPixelColor(0, strip.Color(255, 0, 0)); // Set pixel 0 to red
+        // Check which semaphore is available (don't block indefinitely)
+        if (xSemaphoreTake(xSemLowHumi, 0) == pdTRUE) {
+            current_state = 0;
+        }
+        if (xSemaphoreTake(xSemNormalHumi, 0) == pdTRUE) {
+            current_state = 1;
+        }
+        if (xSemaphoreTake(xSemHighHumi, 0) == pdTRUE) {
+            current_state = 2;
+        }
+
+        // Set color based on state
+        if (current_state == 0) {
+            // Low Humidity: Blue
+            strip.setPixelColor(0, strip.Color(0, 0, 255));
+        } else if (current_state == 1) {
+            // Normal Humidity: Green
+            strip.setPixelColor(0, strip.Color(0, 255, 0));
+        } else {
+            // High Humidity: Red
+            strip.setPixelColor(0, strip.Color(255, 0, 0));
+        }
+
         strip.show(); // Update the strip
 
-        // Wait for 500 milliseconds
-        vTaskDelay(500);
-
-        // Set the pixel to off
-        strip.setPixelColor(0, strip.Color(0, 0, 0)); // Turn pixel 0 off
-        strip.show(); // Update the strip
-
-        // Wait for another 500 milliseconds
-        vTaskDelay(500);
+        // Delay to yield the task
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
 }

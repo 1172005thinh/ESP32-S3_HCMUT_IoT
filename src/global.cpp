@@ -19,3 +19,8 @@ SemaphoreHandle_t xBinarySemaphoreInternet = xSemaphoreCreateBinary();
 SemaphoreHandle_t xSemNormalTemp = NULL;
 SemaphoreHandle_t xSemWarningTemp = NULL;
 SemaphoreHandle_t xSemCriticalTemp = NULL;
+
+// Semaphores for Task 2: Humidity Conditions
+SemaphoreHandle_t xSemLowHumi = NULL;
+SemaphoreHandle_t xSemNormalHumi = NULL;
+SemaphoreHandle_t xSemHighHumi = NULL;

@@ -23,4 +23,9 @@ extern SemaphoreHandle_t xSemNormalTemp;
 extern SemaphoreHandle_t xSemWarningTemp;
 extern SemaphoreHandle_t xSemCriticalTemp;
 
+// Semaphores for Task 2: Humidity Conditions
+extern SemaphoreHandle_t xSemLowHumi;
+extern SemaphoreHandle_t xSemNormalHumi;
+extern SemaphoreHandle_t xSemHighHumi;
+
 #endif

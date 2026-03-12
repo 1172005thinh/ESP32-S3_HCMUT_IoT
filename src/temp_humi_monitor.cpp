@@ -31,6 +31,15 @@ void temp_humi_monitor(void *pvParameters){
         glob_temperature = temperature;
         glob_humidity = humidity;
 
+        // Task 1: Check temperature conditions and give semaphores
+        if (temperature < 28.0) {
+            xSemaphoreGive(xSemNormalTemp);
+        } else if (temperature >= 28.0 && temperature <= 35.0) {
+            xSemaphoreGive(xSemWarningTemp);
+        } else {
+            xSemaphoreGive(xSemCriticalTemp);
+        }
+
         // Print the results
         
         Serial.print("Humidity: ");

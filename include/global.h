@@ -17,4 +17,10 @@ extern String CORE_IOT_PORT;
 
 extern boolean isWifiConnected;
 extern SemaphoreHandle_t xBinarySemaphoreInternet;
+
+// Semaphores for Task 1: Temperature Conditions
+extern SemaphoreHandle_t xSemNormalTemp;
+extern SemaphoreHandle_t xSemWarningTemp;
+extern SemaphoreHandle_t xSemCriticalTemp;
+
 #endif

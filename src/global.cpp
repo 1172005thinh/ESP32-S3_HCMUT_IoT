@@ -14,3 +14,8 @@ String wifi_ssid = "abcde";
 String wifi_password = "123456789";
 boolean isWifiConnected = false;
 SemaphoreHandle_t xBinarySemaphoreInternet = xSemaphoreCreateBinary();
+
+// Semaphores for Task 1: Temperature Conditions
+SemaphoreHandle_t xSemNormalTemp = NULL;
+SemaphoreHandle_t xSemWarningTemp = NULL;
+SemaphoreHandle_t xSemCriticalTemp = NULL;

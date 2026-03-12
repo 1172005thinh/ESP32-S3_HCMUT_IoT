@@ -13,6 +13,7 @@
 #include "task_wifi.h"
 #include "task_webserver.h"
 #include "task_core_iot.h"
+#include "task_lcd.h"
 
 void main_manager_task(void *pvParameters) {
     AppContext* ctx = (AppContext*)pvParameters;
@@ -52,11 +53,7 @@ void setup()
   xTaskCreate(neo_blinky, "Task NEO Blink", 2048, ctx, 2, NULL);
   xTaskCreate(temp_humi_monitor, "Task TEMP HUMI Monitor", 2048, ctx, 2, NULL);
   xTaskCreate(coreiot_task, "CoreIOT Task" ,4096  ,ctx  ,2 , NULL);
-  
-  // External declaration for new task
-  extern void lcd_task(void *pvParameters);
   xTaskCreate(lcd_task, "LCD Task", 2048, ctx, 2, NULL);
-  
   xTaskCreate(main_manager_task, "Main Manager", 4096, ctx, 2, NULL);
 }
 

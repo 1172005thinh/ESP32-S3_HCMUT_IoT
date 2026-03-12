@@ -1,4 +1,6 @@
 #include "temp_humi_monitor.h"
+#include "task_webserver.h"
+
 DHT20 dht20;
 
 void temp_humi_monitor(void *pvParameters){
@@ -28,6 +30,17 @@ void temp_humi_monitor(void *pvParameters){
         ctx->temperature = temperature;
         ctx->humidity = humidity;
         xSemaphoreGive(ctx->mutex);
+
+        // Broadcast sensor data to Websocket
+        StaticJsonDocument<256> doc;
+        doc["page"] = "home";
+        JsonObject value = doc.createNestedObject("value");
+        value["temperature"] = temperature;
+        value["humidity"] = humidity;
+        
+        String jsonStr;
+        serializeJson(doc, jsonStr);
+        Webserver_sendata(jsonStr);
 
         // Task 1: Check temperature conditions and give semaphores
         if (temperature < 28.0) {

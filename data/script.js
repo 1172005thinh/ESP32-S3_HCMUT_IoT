@@ -35,11 +35,21 @@ function Send_Data(data) {
     }
 }
 
+let gaugeTemp;
+let gaugeHumi;
+
 function onMessage(event) {
     console.log("📩 Nhận:", event.data);
     try {
         var data = JSON.parse(event.data);
-        // Có thể thêm xử lý riêng nếu cần (ví dụ cập nhật trạng thái)
+        if (data.page === "home" && data.value) {
+            if (data.value.temperature !== undefined && gaugeTemp) {
+                gaugeTemp.refresh(data.value.temperature);
+            }
+            if (data.value.humidity !== undefined && gaugeHumi) {
+                gaugeHumi.refresh(data.value.humidity);
+            }
+        }
     } catch (e) {
         console.warn("Không phải JSON hợp lệ:", event.data);
     }
@@ -60,9 +70,9 @@ function showSection(id, event) {
 
 // ==================== HOME GAUGES ====================
 window.onload = function () {
-    const gaugeTemp = new JustGage({
+    gaugeTemp = new JustGage({
         id: "gauge_temp",
-        value: 26,
+        value: 0,
         min: -10,
         max: 50,
         donut: true,
@@ -70,12 +80,14 @@ window.onload = function () {
         gaugeWidthScale: 0.25,
         gaugeColor: "transparent",
         levelColorsGradient: true,
-        levelColors: ["#00BCD4", "#4CAF50", "#FFC107", "#F44336"]
+        levelColors: ["#00BCD4", "#4CAF50", "#FFC107", "#F44336"],
+        title: "Nhiệt độ",
+        label: "°C"
     });
 
-    const gaugeHumi = new JustGage({
+    gaugeHumi = new JustGage({
         id: "gauge_humi",
-        value: 60,
+        value: 0,
         min: 0,
         max: 100,
         donut: true,
@@ -83,13 +95,10 @@ window.onload = function () {
         gaugeWidthScale: 0.25,
         gaugeColor: "transparent",
         levelColorsGradient: true,
-        levelColors: ["#42A5F5", "#00BCD4", "#0288D1"]
+        levelColors: ["#42A5F5", "#00BCD4", "#0288D1"],
+        title: "Độ ẩm",
+        label: "%"
     });
-
-    setInterval(() => {
-        gaugeTemp.refresh(Math.floor(Math.random() * 15) + 20);
-        gaugeHumi.refresh(Math.floor(Math.random() * 40) + 40);
-    }, 3000);
 };
 
 
@@ -103,7 +112,7 @@ function closeAddRelayDialog() {
 function saveRelay() {
     const name = document.getElementById('relayName').value.trim();
     const gpio = document.getElementById('relayGPIO').value.trim();
-    if (!name || !gpio) return alert("⚠️ Please fill all fields!");
+    if (!name || !gpio) return alert("⚠️ Vui lòng nhập đủ thông tin!");
     relayList.push({ id: Date.now(), name, gpio, state: false });
     renderRelays();
     closeAddRelayDialog();

@@ -14,7 +14,7 @@ void Webserver_sendata(String data)
     }
     else
     {
-        Serial.println("⚠️ Không có client WebSocket nào đang kết nối!");
+        // Serial.println("⚠️ Không có client WebSocket nào đang kết nối!");
     }
 }
 

@@ -6,26 +6,35 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 
-extern float glob_temperature;
-extern float glob_humidity;
+// Struct to hold all system data, replacing global variables
+struct AppContext {
+    // Sensor Data
+    float temperature;
+    float humidity;
 
-extern String WIFI_SSID;
-extern String WIFI_PASS;
-extern String CORE_IOT_TOKEN;
-extern String CORE_IOT_SERVER;
-extern String CORE_IOT_PORT;
+    // Config Data
+    String WIFI_SSID;
+    String WIFI_PASS;
+    String CORE_IOT_TOKEN;
+    String CORE_IOT_SERVER;
+    String CORE_IOT_PORT;
 
-extern boolean isWifiConnected;
-extern SemaphoreHandle_t xBinarySemaphoreInternet;
+    // Mutex for protecting read/write of this struct
+    SemaphoreHandle_t mutex;
 
-// Semaphores for Task 1: Temperature Conditions
-extern SemaphoreHandle_t xSemNormalTemp;
-extern SemaphoreHandle_t xSemWarningTemp;
-extern SemaphoreHandle_t xSemCriticalTemp;
-
-// Semaphores for Task 2: Humidity Conditions
-extern SemaphoreHandle_t xSemLowHumi;
-extern SemaphoreHandle_t xSemNormalHumi;
-extern SemaphoreHandle_t xSemHighHumi;
+    // Semaphores for task synchronization
+    SemaphoreHandle_t semInternet;
+    SemaphoreHandle_t semNormalTemp;
+    SemaphoreHandle_t semWarningTemp;
+    SemaphoreHandle_t semCriticalTemp;
+    SemaphoreHandle_t semLowHumi;
+    SemaphoreHandle_t semNormalHumi;
+    SemaphoreHandle_t semHighHumi;
+    
+    // Semaphores for Task 3: LCD States
+    SemaphoreHandle_t semLcdNormal;
+    SemaphoreHandle_t semLcdWarning;
+    SemaphoreHandle_t semLcdCritical;
+};
 
 #endif

@@ -8,22 +8,27 @@ void startAP()
     Serial.println(WiFi.softAPIP());
 }
 
-void startSTA()
+void startSTA(AppContext* ctx)
 {
-    if (WIFI_SSID.isEmpty())
+    xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    String ssid = ctx->WIFI_SSID;
+    String pass = ctx->WIFI_PASS;
+    xSemaphoreGive(ctx->mutex);
+
+    if (ssid.isEmpty())
     {
         vTaskDelete(NULL);
     }
 
     WiFi.mode(WIFI_STA);
 
-    if (WIFI_PASS.isEmpty())
+    if (pass.isEmpty())
     {
-        WiFi.begin(WIFI_SSID.c_str());
+        WiFi.begin(ssid.c_str());
     }
     else
     {
-        WiFi.begin(WIFI_SSID.c_str(), WIFI_PASS.c_str());
+        WiFi.begin(ssid.c_str(), pass.c_str());
     }
 
     while (WiFi.status() != WL_CONNECTED)
@@ -31,16 +36,16 @@ void startSTA()
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
     //Give a semaphore here
-    xSemaphoreGive(xBinarySemaphoreInternet);
+    xSemaphoreGive(ctx->semInternet);
 }
 
-bool Wifi_reconnect()
+bool Wifi_reconnect(AppContext* ctx)
 {
     const wl_status_t status = WiFi.status();
     if (status == WL_CONNECTED)
     {
         return true;
     }
-    startSTA();
+    startSTA(ctx);
     return false;
 }

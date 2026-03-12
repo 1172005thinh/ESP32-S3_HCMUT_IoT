@@ -62,7 +62,7 @@ const std::array<RPC_Callback, 1U> callbacks = {
 const Shared_Attribute_Callback attributes_callback(&processSharedAttributes, SHARED_ATTRIBUTES_LIST.cbegin(), SHARED_ATTRIBUTES_LIST.cend());
 const Attribute_Request_Callback attribute_shared_request_callback(&processSharedAttributes, SHARED_ATTRIBUTES_LIST.cbegin(), SHARED_ATTRIBUTES_LIST.cend());
 
-void CORE_IOT_sendata(String mode, String feed, String data)
+void CORE_IOT_sendata(AppContext* ctx, String mode, String feed, String data)
 {
     if (mode == "attribute")
     {
@@ -79,11 +79,17 @@ void CORE_IOT_sendata(String mode, String feed, String data)
     }
 }
 
-void CORE_IOT_reconnect()
+void CORE_IOT_reconnect(AppContext* ctx)
 {
     if (!tb.connected())
     {
-        if (!tb.connect(CORE_IOT_SERVER.c_str(), CORE_IOT_TOKEN.c_str(), CORE_IOT_PORT.toInt()))
+        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+        String server = ctx->CORE_IOT_SERVER;
+        String token = ctx->CORE_IOT_TOKEN;
+        int port = ctx->CORE_IOT_PORT.toInt();
+        xSemaphoreGive(ctx->mutex);
+
+        if (!tb.connect(server.c_str(), token.c_str(), port))
         {
             // Serial.println("Failed to connect");
             return;

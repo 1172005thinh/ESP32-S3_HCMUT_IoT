@@ -1,6 +1,6 @@
 #include "task_check_info.h"
 
-void Load_info_File()
+void Load_info_File(AppContext* ctx)
 {
   File file = LittleFS.open("/info.dat", "r");
   if (!file)
@@ -15,11 +15,13 @@ void Load_info_File()
   }
   else
   {
-    WIFI_SSID = strdup(doc["WIFI_SSID"]);
-    WIFI_PASS = strdup(doc["WIFI_PASS"]);
-    CORE_IOT_TOKEN = strdup(doc["CORE_IOT_TOKEN"]);
-    CORE_IOT_SERVER = strdup(doc["CORE_IOT_SERVER"]);
-    CORE_IOT_PORT = strdup(doc["CORE_IOT_PORT"]);
+    xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    ctx->WIFI_SSID = strdup(doc["WIFI_SSID"]);
+    ctx->WIFI_PASS = strdup(doc["WIFI_PASS"]);
+    ctx->CORE_IOT_TOKEN = strdup(doc["CORE_IOT_TOKEN"]);
+    ctx->CORE_IOT_SERVER = strdup(doc["CORE_IOT_SERVER"]);
+    ctx->CORE_IOT_PORT = strdup(doc["CORE_IOT_PORT"]);
+    xSemaphoreGive(ctx->mutex);
   }
   file.close();
 }
@@ -53,12 +55,12 @@ void Save_info_File(String wifi_ssid, String wifi_pass, String CORE_IOT_TOKEN, S
   }
   else
   {
-    Serial.println('Unable to save the configuration.');
+    Serial.println("Unable to save the configuration.");
   }
   ESP.restart();
 };
 
-bool check_info_File(bool check)
+bool check_info_File(bool check, AppContext* ctx)
 {
   if (!check)
   {
@@ -67,10 +69,15 @@ bool check_info_File(bool check)
       Serial.println("❌ Lỗi khởi động LittleFS!");
       return false;
     }
-    Load_info_File();
+    Load_info_File(ctx);
   }
   
-  if (WIFI_SSID.isEmpty() && WIFI_PASS.isEmpty())
+  bool isEmpty = false;
+  xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+  isEmpty = (ctx->WIFI_SSID.isEmpty() && ctx->WIFI_PASS.isEmpty());
+  xSemaphoreGive(ctx->mutex);
+
+  if (isEmpty)
   {
     if (!check)
     {

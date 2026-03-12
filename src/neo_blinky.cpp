@@ -2,6 +2,7 @@
 #include "global.h"
 
 void neo_blinky(void *pvParameters){
+    AppContext* ctx = (AppContext*)pvParameters;
 
     Adafruit_NeoPixel strip(LED_COUNT, NEO_PIN, NEO_GRB + NEO_KHZ800);
     strip.begin();
@@ -13,13 +14,13 @@ void neo_blinky(void *pvParameters){
 
     while(1) {                          
         // Check which semaphore is available (don't block indefinitely)
-        if (xSemaphoreTake(xSemLowHumi, 0) == pdTRUE) {
+        if (xSemaphoreTake(ctx->semLowHumi, 0) == pdTRUE) {
             current_state = 0;
         }
-        if (xSemaphoreTake(xSemNormalHumi, 0) == pdTRUE) {
+        if (xSemaphoreTake(ctx->semNormalHumi, 0) == pdTRUE) {
             current_state = 1;
         }
-        if (xSemaphoreTake(xSemHighHumi, 0) == pdTRUE) {
+        if (xSemaphoreTake(ctx->semHighHumi, 0) == pdTRUE) {
             current_state = 2;
         }
 

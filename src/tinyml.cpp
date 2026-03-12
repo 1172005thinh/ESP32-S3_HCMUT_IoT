@@ -46,7 +46,7 @@ void setupTinyML()
 
 void tiny_ml_task(void *pvParameters)
 {
-
+    AppContext* ctx = (AppContext*)pvParameters;
     setupTinyML();
 
     while (1)
@@ -54,8 +54,10 @@ void tiny_ml_task(void *pvParameters)
 
         // Prepare input data (e.g., sensor readings)
         // For a simple example, let's assume a single float input
-        input->data.f[0] = glob_temperature;
-        input->data.f[1] = glob_humidity;
+        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+        input->data.f[0] = ctx->temperature;
+        input->data.f[1] = ctx->humidity;
+        xSemaphoreGive(ctx->mutex);
 
         // Run inference
         TfLiteStatus invoke_status = interpreter->Invoke();

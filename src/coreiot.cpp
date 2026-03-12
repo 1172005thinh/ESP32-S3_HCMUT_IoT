@@ -79,19 +79,10 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 
-void setup_coreiot(){
-
-  //Serial.print("Connecting to WiFi...");
-  //WiFi.begin(wifi_ssid, wifi_password);
-  //while (WiFi.status() != WL_CONNECTED) {
-  
-  // while (isWifiConnected == false) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
+void setup_coreiot(AppContext* ctx){
 
   while(1){
-    if (xSemaphoreTake(xBinarySemaphoreInternet, portMAX_DELAY)) {
+    if (xSemaphoreTake(ctx->semInternet, portMAX_DELAY)) {
       break;
     }
     delay(500);
@@ -101,14 +92,19 @@ void setup_coreiot(){
 
   Serial.println(" Connected!");
 
-  client.setServer(CORE_IOT_SERVER.c_str(), CORE_IOT_PORT.toInt());
+  xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+  String server = ctx->CORE_IOT_SERVER;
+  int port = ctx->CORE_IOT_PORT.toInt();
+  xSemaphoreGive(ctx->mutex);
+
+  client.setServer(server.c_str(), port);
   client.setCallback(callback);
 
 }
 
 void coreiot_task(void *pvParameters){
-
-    setup_coreiot();
+    AppContext* ctx = (AppContext*)pvParameters;
+    setup_coreiot(ctx);
 
     while(1){
 
@@ -117,14 +113,17 @@ void coreiot_task(void *pvParameters){
         }
         client.loop();
 
+        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+        float temp = ctx->temperature;
+        float humi = ctx->humidity;
+        xSemaphoreGive(ctx->mutex);
+
         // Sample payload, publish to 'v1/devices/me/telemetry'
-        String payload = "{\"temperature\":" + String(glob_temperature) +  ",\"humidity\":" + String(glob_humidity) + "}";
+        String payload = "{\"temperature\":" + String(temp) +  ",\"humidity\":" + String(humi) + "}";
         
         client.publish("v1/devices/me/telemetry", payload.c_str());
-
-
         
         Serial.println("Published payload: " + payload);
-        vTaskDelay(10000);  // Publish every 10 seconds
+        vTaskDelay(10000 / portTICK_PERIOD_MS);  // Publish every 10 seconds
     }
 }

@@ -2,18 +2,19 @@
 #include "global.h"
 
 void led_blinky(void *pvParameters){
+  AppContext* ctx = (AppContext*)pvParameters;
   pinMode(LED_GPIO, OUTPUT);
   int current_state = 0; // 0: Normal, 1: Warning, 2: Critical
   
   while(1) {                        
     // Check which semaphore is available (don't block indefinitely, just check with 0 ticks)
-    if (xSemaphoreTake(xSemNormalTemp, 0) == pdTRUE) {
+    if (xSemaphoreTake(ctx->semNormalTemp, 0) == pdTRUE) {
         current_state = 0;
     }
-    if (xSemaphoreTake(xSemWarningTemp, 0) == pdTRUE) {
+    if (xSemaphoreTake(ctx->semWarningTemp, 0) == pdTRUE) {
         current_state = 1;
     }
-    if (xSemaphoreTake(xSemCriticalTemp, 0) == pdTRUE) {
+    if (xSemaphoreTake(ctx->semCriticalTemp, 0) == pdTRUE) {
         current_state = 2;
     }
 

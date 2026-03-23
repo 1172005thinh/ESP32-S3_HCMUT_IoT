@@ -67,6 +67,49 @@ function showSection(id, event) {
     event.currentTarget.classList.add('active');
 }
 
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+// ==================== THEME TOGGLE ====================
+document.addEventListener('DOMContentLoaded', () => {
+    const themeBtn = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+        updateThemeToggleUI(savedTheme);
+    }
+
+    if(themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggleUI(newTheme);
+        });
+    }
+});
+
+function updateThemeToggleUI(theme) {
+    const themeBtn = document.getElementById('themeToggle');
+    if(!themeBtn) return;
+    const icon = themeBtn.querySelector('i');
+    const text = themeBtn.querySelector('span');
+    
+    if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun';
+        text.textContent = 'Light';
+    } else {
+        icon.className = 'fa-solid fa-moon';
+        text.textContent = 'Dark';
+    }
+}
+
 
 // ==================== HOME GAUGES ====================
 window.onload = function () {

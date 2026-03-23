@@ -1,8 +1,8 @@
 #include "coreiot.h"
 
 // ----------- CONFIGURE THESE! -----------
-const char* coreIOT_Server = "10.235.76.226";  
-const char* coreIOT_Token = "g7drm1amhd3dchr379xu";   // Device Access Token
+const char* coreIOT_Server = "app.coreiot.io";  // CoreIOT Server URL
+const char* coreIOT_Token = "4gkjmsdotg3yfc2jjojv";   // Device Access Token
 const int   mqttPort = 1883;
 // ----------------------------------------
 
@@ -10,16 +10,20 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 
-void reconnect() {
+void reconnect(AppContext* ctx) {
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
-    // Attempt to connect (username=token, password=empty)
-    //if (client.connect("ESP32Client", coreIOT_Token, NULL)) {
+    
+    xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+    String token = ctx->CORE_IOT_TOKEN;
+    xSemaphoreGive(ctx->mutex);
+
     String clientId = "ESP32Client-";
     clientId += String(random(0xffff), HEX);
 
-    if (client.connect(clientId.c_str())) {
+    // ThingsBoard/CoreIoT uses the Access Token as the MQTT username
+    if (client.connect(clientId.c_str(), token.c_str(), NULL)) {
         
       Serial.println("connected to CoreIOT Server!");
       client.subscribe("v1/devices/me/rpc/request/+");
@@ -109,7 +113,7 @@ void coreiot_task(void *pvParameters){
     while(1){
 
         if (!client.connected()) {
-            reconnect();
+            reconnect(ctx);
         }
         client.loop();
 

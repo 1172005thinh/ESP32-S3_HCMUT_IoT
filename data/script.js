@@ -35,18 +35,18 @@ function Send_Data(data) {
     }
 }
 
-let gaugeTemp;
-let gaugeHumi;
+let gaugeTemp = null;
+let gaugeHumi = null;
 
 function onMessage(event) {
     console.log("📩 Nhận:", event.data);
     try {
         var data = JSON.parse(event.data);
         if (data.page === "home" && data.value) {
-            if (data.value.temperature !== undefined && gaugeTemp) {
+            if (data.value.temperature !== undefined && gaugeTemp !== null) {
                 gaugeTemp.refresh(data.value.temperature);
             }
-            if (data.value.humidity !== undefined && gaugeHumi) {
+            if (data.value.humidity !== undefined && gaugeHumi !== null) {
                 gaugeHumi.refresh(data.value.humidity);
             }
         }

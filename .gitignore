@@ -62,3 +62,7 @@ GEMINI.md
 diagram.json
 wokwi.toml
 
+# PROMPT
+docs/PROMPT.md
+docs/REPORT.md
+

@@ -1,26 +1,102 @@
 #include "coreiot.h"
 
-// ----------- CONFIGURE THESE! -----------
-const char* coreIOT_Server = "app.coreiot.io";  // CoreIOT Server URL
-const char* coreIOT_Token = "4gkjmsdotg3yfc2jjojv";   // Device Access Token
-const int   mqttPort = 1883;
-// ----------------------------------------
-
 WiFiClient espClient;
 PubSubClient client(espClient);
+static String mqttServerHost;
+static uint16_t mqttServerPort = 1883;
+
+static const char* wifiStatusToText(wl_status_t status) {
+  switch (status) {
+    case WL_NO_SHIELD: return "WL_NO_SHIELD";
+    case WL_IDLE_STATUS: return "WL_IDLE_STATUS";
+    case WL_NO_SSID_AVAIL: return "WL_NO_SSID_AVAIL";
+    case WL_SCAN_COMPLETED: return "WL_SCAN_COMPLETED";
+    case WL_CONNECTED: return "WL_CONNECTED";
+    case WL_CONNECT_FAILED: return "WL_CONNECT_FAILED";
+    case WL_CONNECTION_LOST: return "WL_CONNECTION_LOST";
+    case WL_DISCONNECTED: return "WL_DISCONNECTED";
+    default: return "WL_UNKNOWN";
+  }
+}
+
+static const char* mqttStateToText(int state) {
+  switch (state) {
+    case -4: return "MQTT_CONNECTION_TIMEOUT";
+    case -3: return "MQTT_CONNECTION_LOST";
+    case -2: return "MQTT_CONNECT_FAILED";
+    case -1: return "MQTT_DISCONNECTED";
+    case 0: return "MQTT_CONNECTED";
+    case 1: return "MQTT_CONNECT_BAD_PROTOCOL";
+    case 2: return "MQTT_CONNECT_BAD_CLIENT_ID";
+    case 3: return "MQTT_CONNECT_UNAVAILABLE";
+    case 4: return "MQTT_CONNECT_BAD_CREDENTIALS";
+    case 5: return "MQTT_CONNECT_UNAUTHORIZED";
+    default: return "MQTT_STATE_UNKNOWN";
+  }
+}
 
 
 void reconnect(AppContext* ctx) {
   // Loop until we're reconnected
   while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
+    Serial.printf("Attempting MQTT connection to %s:%u...\n", mqttServerHost.c_str(), mqttServerPort);
     
     xSemaphoreTake(ctx->mutex, portMAX_DELAY);
     String token = ctx->CORE_IOT_TOKEN;
     xSemaphoreGive(ctx->mutex);
 
+    if (token.isEmpty()) {
+      Serial.println("MQTT token is empty, cannot connect");
+      delay(5000);
+      continue;
+    }
+
+    wl_status_t wifiStatus = WiFi.status();
+    Serial.printf("WiFi status: %d (%s), local IP: %s\n", (int)wifiStatus, wifiStatusToText(wifiStatus), WiFi.localIP().toString().c_str());
+    Serial.printf("Gateway: %s, DNS: %s\n", WiFi.gatewayIP().toString().c_str(), WiFi.dnsIP().toString().c_str());
+
+    IPAddress brokerIP;
+    int dnsResult = WiFi.hostByName(mqttServerHost.c_str(), brokerIP);
+    if (dnsResult == 1) {
+      Serial.printf("DNS OK: %s -> %s\n", mqttServerHost.c_str(), brokerIP.toString().c_str());
+
+      WiFiClient probeClient;
+      bool tcpOk = probeClient.connect(brokerIP, mqttServerPort);
+      if (tcpOk) {
+        Serial.printf("TCP OK: %s:%u reachable\n", brokerIP.toString().c_str(), mqttServerPort);
+        probeClient.stop();
+      } else {
+        Serial.printf("TCP FAILED: cannot reach %s:%u\n", brokerIP.toString().c_str(), mqttServerPort);
+
+        WiFiClient probe443;
+        bool tcp443Ok = probe443.connect(brokerIP, 443);
+        Serial.printf("Probe 443: %s\n", tcp443Ok ? "reachable" : "unreachable");
+        if (tcp443Ok) {
+          probe443.stop();
+        }
+
+        WiFiClient probe80;
+        bool tcp80Ok = probe80.connect(brokerIP, 80);
+        Serial.printf("Probe 80: %s\n", tcp80Ok ? "reachable" : "unreachable");
+        if (tcp80Ok) {
+          probe80.stop();
+        }
+
+        WiFiClient probe8883;
+        bool tcp8883Ok = probe8883.connect(brokerIP, 8883);
+        Serial.printf("Probe 8883: %s\n", tcp8883Ok ? "reachable" : "unreachable");
+        if (tcp8883Ok) {
+          probe8883.stop();
+        }
+      }
+    } else {
+      Serial.printf("DNS FAILED for %s, hostByName rc=%d\n", mqttServerHost.c_str(), dnsResult);
+    }
+
     String clientId = "ESP32Client-";
     clientId += String(random(0xffff), HEX);
+
+    Serial.printf("MQTT clientId=%s, tokenLen=%u\n", clientId.c_str(), (unsigned int)token.length());
 
     // ThingsBoard/CoreIoT uses the Access Token as the MQTT username
     if (client.connect(clientId.c_str(), token.c_str(), NULL)) {
@@ -30,9 +106,10 @@ void reconnect(AppContext* ctx) {
       Serial.println("Subscribed to v1/devices/me/rpc/request/+");
 
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      int state = client.state();
+      Serial.printf("failed, rc=%d (%s)\n", state, mqttStateToText(state));
+      Serial.printf("MQTT endpoint was %s:%u\n", mqttServerHost.c_str(), mqttServerPort);
+      Serial.println("Retry in 5 seconds");
       delay(5000);
     }
   }
@@ -97,11 +174,21 @@ void setup_coreiot(AppContext* ctx){
   Serial.println(" Connected!");
 
   xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-  String server = ctx->CORE_IOT_SERVER;
-  int port = ctx->CORE_IOT_PORT.toInt();
+  mqttServerHost = ctx->CORE_IOT_SERVER;
+  mqttServerPort = (uint16_t)ctx->CORE_IOT_PORT.toInt();
   xSemaphoreGive(ctx->mutex);
 
-  client.setServer(server.c_str(), port);
+  if (mqttServerHost.isEmpty()) {
+    Serial.println("CoreIOT server is empty, skip MQTT setup");
+    return;
+  }
+
+  if (mqttServerPort == 0) {
+    mqttServerPort = 1883;
+  }
+
+  // Keep host in static storage because PubSubClient stores this pointer.
+  client.setServer(mqttServerHost.c_str(), mqttServerPort);
   client.setCallback(callback);
 
 }

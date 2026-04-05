@@ -57,6 +57,15 @@ void connnectWSV()
     server.on("/justgage.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(LittleFS, "/justgage.min.js", "application/javascript"); });
     server.begin();
+    server.on("/justgage.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/justgage.min.js", "application/javascript");
+});
+
+server.on("/raphael.min.js", HTTP_GET, [](AsyncWebServerRequest *request)
+{
+    request->send(LittleFS, "/raphael.min.js", "application/javascript");
+});
     ElegantOTA.begin(&server);
     webserver_isrunning = true;
 }

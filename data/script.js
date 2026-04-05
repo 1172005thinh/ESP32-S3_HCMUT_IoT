@@ -91,6 +91,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeToggleUI(newTheme);
+
+            document.getElementById("gauge_temp").innerHTML = "";
+            document.getElementById("gauge_humi").innerHTML = "";
+            renderGauges();
         });
     }
 });
@@ -112,38 +116,45 @@ function updateThemeToggleUI(theme) {
 
 
 // ==================== HOME GAUGES ====================
-window.onload = function () {
-    gaugeTemp = new JustGage({
-        id: "gauge_temp",
+function renderGauges() {
+    const currentTheme = document.body.getAttribute('data-theme') || 'light';
+    const textColor = (currentTheme === 'dark') ? "#ffffff" : "#0f172a";
+
+    const commonConfig = {
         value: 0,
-        min: -10,
-        max: 50,
         donut: true,
         pointer: false,
         gaugeWidthScale: 0.25,
         gaugeColor: "transparent",
         levelColorsGradient: true,
-        levelColors: ["#00BCD4", "#4CAF50", "#FFC107", "#F44336"],
+        valueFontColor: textColor, 
+        titleFontColor: textColor  
+    };
+
+    gaugeTemp = new JustGage({
+        id: "gauge_temp",
+        min: -10,
+        max: 50,
         title: "Nhiệt độ",
-        label: "°C"
+        label: "\n°C",
+        levelColors: ["#00BCD4", "#4CAF50", "#FFC107", "#F44336"],
+        ...commonConfig
     });
 
     gaugeHumi = new JustGage({
         id: "gauge_humi",
-        value: 0,
-        min: 0,
+        min: 0,        
         max: 100,
-        donut: true,
-        pointer: false,
-        gaugeWidthScale: 0.25,
-        gaugeColor: "transparent",
-        levelColorsGradient: true,
-        levelColors: ["#42A5F5", "#00BCD4", "#0288D1"],
         title: "Độ ẩm",
-        label: "%"
+        label: "\n%",
+        levelColors: ["#42A5F5", "#00BCD4", "#0288D1"],
+        ...commonConfig
     });
-};
+}
 
+window.addEventListener('load', () => {
+    renderGauges();
+});
 
 // ==================== DEVICE FUNCTIONS ====================
 function openAddRelayDialog() {

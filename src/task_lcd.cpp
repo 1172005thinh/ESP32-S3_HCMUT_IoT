@@ -4,7 +4,7 @@
 void lcd_task(void *pvParameters) {
     AppContext* ctx = (AppContext*)pvParameters;
     
-    LiquidCrystal_I2C lcd(0x27, 16, 2); // Typical I2C address is 0x27
+    LiquidCrystal_I2C lcd(0x21, 16, 2); // Typical I2C address is 0x27
     lcd.begin();
     lcd.backlight();
     
@@ -48,6 +48,6 @@ void lcd_task(void *pvParameters) {
         lcd.print(" H:");
         lcd.print(humi, 1);
         
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // Update screen every second
+        vTaskDelay(100 / portTICK_PERIOD_MS); // Update screen 0.1s
     }
 }

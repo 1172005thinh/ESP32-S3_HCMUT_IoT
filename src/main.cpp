@@ -33,7 +33,7 @@ void main_manager_task(void *pvParameters) {
 void setup()
 {
   Serial.begin(115200);
-  startAP(); 
+  //startAP(); 
   AppContext* ctx = new AppContext();
   ctx->mutex = xSemaphoreCreateMutex();
   ctx->semInternet = xSemaphoreCreateBinary();

@@ -2,10 +2,8 @@
 
 void startAP()
 {
-    WiFi.mode(WIFI_AP_STA);
-
-    WiFi.softAP("ESP32_LOCAL", "12345678");
-
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(String(SSID_AP), String(PASS_AP));
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
 }
@@ -17,27 +15,28 @@ void startSTA(AppContext* ctx)
     String pass = ctx->WIFI_PASS;
     xSemaphoreGive(ctx->mutex);
 
-    if (ssid.isEmpty()) return; // ❌ KHÔNG delete task nữa
+    if (ssid.isEmpty())
+    {
+        vTaskDelete(NULL);
+    }
 
-    WiFi.mode(WIFI_AP_STA); // 🔥 giữ luôn AP
+    WiFi.mode(WIFI_STA);
 
     if (pass.isEmpty())
+    {
         WiFi.begin(ssid.c_str());
+    }
     else
+    {
         WiFi.begin(ssid.c_str(), pass.c_str());
-
-    int retry = 0;
-    while (WiFi.status() != WL_CONNECTED && retry < 50)
-    {
-        vTaskDelay(200 / portTICK_PERIOD_MS);
-        retry++;
     }
 
-    if (WiFi.status() == WL_CONNECTED)
+    while (WiFi.status() != WL_CONNECTED)
     {
-        Serial.println("Connected WiFi!");
-        xSemaphoreGive(ctx->semInternet);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
+    //Give a semaphore here
+    xSemaphoreGive(ctx->semInternet);
 }
 
 bool Wifi_reconnect(AppContext* ctx)

@@ -2,7 +2,7 @@
 
 void startAP()
 {
-    WiFi.mode(WIFI_AP);
+    WiFi.mode(WIFI_AP_STA);
     WiFi.softAP(String(SSID_AP), String(PASS_AP));
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
@@ -20,7 +20,7 @@ void startSTA(AppContext* ctx)
         vTaskDelete(NULL);
     }
 
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
 
     if (pass.isEmpty())
     {

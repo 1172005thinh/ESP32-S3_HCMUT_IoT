@@ -3,27 +3,35 @@
 void Load_info_File(AppContext* ctx)
 {
   File file = LittleFS.open("/info.dat", "r");
-  if (!file)
+  if (file)
   {
-    return;
+    DynamicJsonDocument doc(4096);
+    DeserializationError error = deserializeJson(doc, file);
+    if (error)
+    {
+      Serial.print(F("deserializeJson() failed: "));
+    }
+    else
+    {
+      xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+      ctx->WIFI_SSID = strdup(doc["WIFI_SSID"]);
+      ctx->WIFI_PASS = strdup(doc["WIFI_PASS"]);
+      ctx->CORE_IOT_TOKEN = strdup(doc["CORE_IOT_TOKEN"]);
+      ctx->CORE_IOT_SERVER = strdup(doc["CORE_IOT_SERVER"]);
+      ctx->CORE_IOT_PORT = strdup(doc["CORE_IOT_PORT"]);
+      xSemaphoreGive(ctx->mutex);
+    }
+    file.close();
   }
-  DynamicJsonDocument doc(4096);
-  DeserializationError error = deserializeJson(doc, file);
-  if (error)
-  {
-    Serial.print(F("deserializeJson() failed: "));
-  }
-  else
-  {
-    xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-    ctx->WIFI_SSID = strdup(doc["WIFI_SSID"]);
-    ctx->WIFI_PASS = strdup(doc["WIFI_PASS"]);
-    ctx->CORE_IOT_TOKEN = strdup(doc["CORE_IOT_TOKEN"]);
-    ctx->CORE_IOT_SERVER = strdup(doc["CORE_IOT_SERVER"]);
-    ctx->CORE_IOT_PORT = strdup(doc["CORE_IOT_PORT"]);
-    xSemaphoreGive(ctx->mutex);
-  }
-  file.close();
+
+  // Hardcode LAN Wi-Fi & CoreIOT parameters
+  xSemaphoreTake(ctx->mutex, portMAX_DELAY);
+  ctx->WIFI_SSID = "HungThinhA56";
+  ctx->WIFI_PASS = "";
+  ctx->CORE_IOT_SERVER = "app.coreiot.io";
+  ctx->CORE_IOT_TOKEN = "";
+  ctx->CORE_IOT_PORT = "1883";
+  xSemaphoreGive(ctx->mutex);
 }
 
 void Delete_info_File()
@@ -77,12 +85,13 @@ bool check_info_File(bool check, AppContext* ctx)
   isEmpty = (ctx->WIFI_SSID.isEmpty() && ctx->WIFI_PASS.isEmpty());
   xSemaphoreGive(ctx->mutex);
 
+  if (!check)
+  {
+    startAP();
+  }
+
   if (isEmpty)
   {
-    if (!check)
-    {
-      startAP();
-    }
     return false;
   }
   return true;

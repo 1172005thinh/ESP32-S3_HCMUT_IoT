@@ -9,7 +9,7 @@ function onLoad(event) {
 }
 
 function onOpen(event) {
-    console.log('Connection opened');
+    console.log('[SYS] Connection opened');
 }
 
 function onClose(event) {
@@ -18,7 +18,7 @@ function onClose(event) {
 }
 
 function initWebSocket() {
-    console.log('Trying to open a WebSocket connection…');
+    console.log('[SYS] Trying to open a WebSocket connection…');
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen;
     websocket.onclose = onClose;
@@ -28,10 +28,10 @@ function initWebSocket() {
 function Send_Data(data) {
     if (websocket && websocket.readyState === WebSocket.OPEN) {
         websocket.send(data);
-        console.log("📤 Gửi:", data);
+        console.log("[MSG] Sent:", data);
     } else {
-        console.warn("⚠️ WebSocket chưa sẵn sàng!");
-        alert("⚠️ WebSocket chưa kết nối!");
+        console.warn("[ERR] WebSocket is not ready.");
+        alert("[ERR] WebSocket is not connected.");
     }
 }
 
@@ -39,7 +39,7 @@ let gaugeTemp = null;
 let gaugeHumi = null;
 
 function onMessage(event) {
-    console.log("📩 Nhận:", event.data);
+    console.log("[MSG] Received:", event.data);
     try {
         var data = JSON.parse(event.data);
         if (data.page === "home" && data.value) {
@@ -51,7 +51,7 @@ function onMessage(event) {
             }
         }
     } catch (e) {
-        console.warn("Không phải JSON hợp lệ:", event.data);
+        console.warn("[ERR] Invalid JSON received:", event.data);
     }
 }
 
@@ -155,7 +155,7 @@ function closeAddRelayDialog() {
 function saveRelay() {
     const name = document.getElementById('relayName').value.trim();
     const gpio = document.getElementById('relayGPIO').value.trim();
-    if (!name || !gpio) return alert("⚠️ Vui lòng nhập đủ thông tin!");
+    if (!name || !gpio) return alert("[ERR] Please fill in all fields!");
     relayList.push({ id: Date.now(), name, gpio, state: false });
     renderRelays();
     closeAddRelayDialog();
@@ -230,5 +230,5 @@ document.getElementById("settingsForm").addEventListener("submit", function (e) 
     });
 
     Send_Data(settingsJSON);
-    alert("✅ Cấu hình đã được gửi đến thiết bị!");
+    alert("[SUCCESS] Configuration sent to device!");
 });

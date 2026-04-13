@@ -17,7 +17,7 @@ void sendRS485Command(byte *command, int commandSize, byte *response, int respon
     }
     else
     {
-        Serial.println("Failed to read response - - - - - -");
+        Serial.println("[ERR] Failed to read response - - - - - -");
     }
 }
 
@@ -46,7 +46,7 @@ void _sensor_read()
     }
     else
     {
-        Serial.println("Failed to read sound");
+        Serial.println("[ERR] Failed to read sound");
     }
 
     delay(delay_connect);
@@ -60,14 +60,14 @@ void _sensor_read()
     }
     else
     {
-        Serial.println("Failed to read pressure");
+        Serial.println("[ERR] Failed to read pressure");
     }
 
     delay(delay_connect);
     memset(response, 0, sizeof(response));
 
-    Serial.println("sound : " + String(sound));
-    Serial.println("pressure: " + String(pressure));
+    Serial.println("[INF] sound : " + String(sound));
+    Serial.println("[INF] pressure: " + String(pressure));
 }
 
 void Task_Read_Sensor(void *pvParameters)
@@ -104,29 +104,29 @@ void Task_Send_data(void *pvParameters)
     {
         if (!state)
         {
-            Serial.println("🟢 Đang bật từng relay...");
+            Serial.println("[MSG] Turning ON each relay...");
             for (int i = 0; i < 4; i++)
             {
                 sendModbusCommand(relay_ON[i], sizeof(relay_ON[i]));
-                Serial.println("Bật relay " + String(i));
+                Serial.println("[MSG] Turning ON relay " + String(i));
                 vTaskDelay(1000 / portTICK_PERIOD_MS); // Giữ 1 giây giữa mỗi lần bật
             }
         }
         else
         {
-            Serial.println("🔴 Đang tắt từng relay...");
+            Serial.println("[MSG] Turning OFF each relay...");
             for (int i = 0; i < 4; i++)
             {
                 sendModbusCommand(relay_OFF[i], sizeof(relay_OFF[i]));
-                Serial.println("Tắt relay " + String(i));
+                Serial.println("[MSG] Turning OFF relay " + String(i));
                 vTaskDelay(1000 / portTICK_PERIOD_MS); // Giữ 1 giây giữa mỗi lần tắt
             }
         }
 
         if (!state)
-            Serial.println("✅ Hoàn tất bật tất cả relay!");
+            Serial.println("[MSG] Turned ON all relays!");
         else
-            Serial.println("✅ Hoàn tất tắt tất cả relay!");
+            Serial.println("[MSG] Turned OFF all relays!");
 
         // Đảo trạng thái cho lần kế tiếp
         state = !state;

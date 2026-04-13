@@ -54,7 +54,7 @@ void Save_info_File(String wifi_ssid, String wifi_pass, String CORE_IOT_TOKEN, S
   }
   else
   {
-    Serial.println("Unable to save the configuration.");
+    Serial.println("[ERR] Unable to save the configuration.");
   }
   ESP.restart();
 };
@@ -65,7 +65,7 @@ bool check_info_File(bool check, AppContext* ctx)
   {
     if (!LittleFS.begin(true))
     {
-      Serial.println("❌ Lỗi khởi động LittleFS!");
+      Serial.println("[ERR] Initialize error - LittleFS!");
       return false;
     }
     Load_info_File(ctx);
@@ -78,7 +78,9 @@ bool check_info_File(bool check, AppContext* ctx)
 
   if (!check)
   {
-    startAP();
+    if (isEmpty) {
+      startAP();
+    }
   }
 
   if (isEmpty)

@@ -20,10 +20,7 @@ void main_manager_task(void *pvParameters) {
     while(1) {
         if (check_info_File(1, ctx))
         {
-            if (!Wifi_reconnect(ctx))
-            {
-                Webserver_stop();
-            }
+            Wifi_reconnect(ctx);
         }
         Webserver_reconnect();
         vTaskDelay(50 / portTICK_PERIOD_MS);

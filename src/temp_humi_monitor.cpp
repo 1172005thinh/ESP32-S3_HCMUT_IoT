@@ -20,7 +20,7 @@ void temp_humi_monitor(void *pvParameters){
 
         // Check if any reads failed and exit early
         if (isnan(temperature) || isnan(humidity)) {
-            Serial.println("Failed to read from DHT sensor!");
+            Serial.println("[ERR] Failed to read from DHT sensor!");
             temperature = humidity =  -1;
             //return;
         }

@@ -23,15 +23,6 @@ void Load_info_File(AppContext* ctx)
     }
     file.close();
   }
-
-  // Hardcode LAN Wi-Fi & CoreIOT parameters
-  xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-  ctx->WIFI_SSID = "HungThinhA56";
-  ctx->WIFI_PASS = "";
-  ctx->CORE_IOT_SERVER = "app.coreiot.io";
-  ctx->CORE_IOT_TOKEN = "";
-  ctx->CORE_IOT_PORT = "1883";
-  xSemaphoreGive(ctx->mutex);
 }
 
 void Delete_info_File()

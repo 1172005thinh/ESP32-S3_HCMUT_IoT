@@ -12,6 +12,7 @@ void lcd_task(void *pvParameters) {
     lcd.print("System Ready");
 
     int current_state = 0; // 0: Normal, 1: Warning, 2: Critical
+    bool anomalyDetected = false;
 
     while(1) {
         // Check which semaphore is available (don't block indefinitely)
@@ -25,10 +26,15 @@ void lcd_task(void *pvParameters) {
             current_state = 2;
         }
 
+        // Check anomaly queue without blocking
+        xQueueReceive(xAnomalyQueueLCD, &anomalyDetected, 0);
+
         // Display current state
         lcd.clear();
         lcd.setCursor(0, 0);
-        if (current_state == 0) {
+        if (anomalyDetected) {
+            lcd.print("WARN: ANOMALY");
+        } else if (current_state == 0) {
             lcd.print("State: NORMAL");
         } else if (current_state == 1) {
             lcd.print("State: WARNING");

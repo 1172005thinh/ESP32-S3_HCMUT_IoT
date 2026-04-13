@@ -197,6 +197,8 @@ void coreiot_task(void *pvParameters){
     AppContext* ctx = (AppContext*)pvParameters;
     setup_coreiot(ctx);
 
+    bool anomalyDetected = false;
+
     while(1){
 
         if (!client.connected()) {
@@ -204,13 +206,16 @@ void coreiot_task(void *pvParameters){
         }
         client.loop();
 
+        // Check anomaly queue without blocking
+        xQueueReceive(xAnomalyQueueIOT, &anomalyDetected, 0);
+
         xSemaphoreTake(ctx->mutex, portMAX_DELAY);
         float temp = ctx->temperature;
         float humi = ctx->humidity;
         xSemaphoreGive(ctx->mutex);
 
         // Sample payload, publish to 'v1/devices/me/telemetry'
-        String payload = "{\"temperature\":" + String(temp) +  ",\"humidity\":" + String(humi) + "}";
+        String payload = "{\"temperature\":" + String(temp) +  ",\"humidity\":" + String(humi) + ",\"anomaly\":" + (anomalyDetected ? "true" : "false") + "}";
         
         client.publish("v1/devices/me/telemetry", payload.c_str());
         

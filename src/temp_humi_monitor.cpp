@@ -31,6 +31,10 @@ void temp_humi_monitor(void *pvParameters){
         ctx->humidity = humidity;
         xSemaphoreGive(ctx->mutex);
 
+        // Feed data to the ML task
+        SensorData data = {temperature, humidity};
+        xQueueSend(xSensorDataQueue, &data, 0);
+
         // Broadcast sensor data to Websocket
         StaticJsonDocument<256> doc;
         doc["page"] = "home";

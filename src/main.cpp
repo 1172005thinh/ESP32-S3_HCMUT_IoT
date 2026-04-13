@@ -4,7 +4,7 @@
 #include "neo_blinky.h"
 #include "temp_humi_monitor.h"
 // #include "mainserver.h"
-// #include "tinyml.h"
+#include "tinyml.h"
 #include "coreiot.h"
 
 // include task
@@ -47,11 +47,16 @@ void setup()
   ctx->semLcdWarning = xSemaphoreCreateBinary();
   ctx->semLcdCritical = xSemaphoreCreateBinary();
 
+  xSensorDataQueue = xQueueCreate(5, sizeof(SensorData));
+  xAnomalyQueueLCD = xQueueCreate(5, sizeof(bool));
+  xAnomalyQueueIOT = xQueueCreate(5, sizeof(bool));
+
   check_info_File(0, ctx);
 
   xTaskCreate(led_blinky, "Task LED Blink", 2048, ctx, 2, NULL);
   xTaskCreate(neo_blinky, "Task NEO Blink", 2048, ctx, 2, NULL);
   xTaskCreate(temp_humi_monitor, "Task TEMP HUMI Monitor", 2048, ctx, 2, NULL);
+  xTaskCreate(tiny_ml_task, "TinyML Task", 8192, ctx, 2, NULL);
   xTaskCreate(coreiot_task, "CoreIOT Task" ,4096  ,ctx  ,2 , NULL);
   xTaskCreate(lcd_task, "LCD Task", 2048, ctx, 2, NULL);
   xTaskCreate(main_manager_task, "Main Manager", 4096, ctx, 2, NULL);

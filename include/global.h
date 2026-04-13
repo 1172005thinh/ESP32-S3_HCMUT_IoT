@@ -37,4 +37,14 @@ struct AppContext {
     SemaphoreHandle_t semLcdCritical;
 };
 
+// Struct to hold sensor data for ML queue
+struct SensorData {
+    float temperature;
+    float humidity;
+};
+
+extern QueueHandle_t xSensorDataQueue;
+extern QueueHandle_t xAnomalyQueueLCD;
+extern QueueHandle_t xAnomalyQueueIOT;
+
 #endif

@@ -8,7 +8,7 @@ namespace
     tflite::MicroInterpreter *interpreter = nullptr;
     TfLiteTensor *input = nullptr;
     TfLiteTensor *output = nullptr;
-    constexpr int kTensorArenaSize = 8 * 1024; // Adjust size based on your model
+    constexpr int kTensorArenaSize = 4 * 1024; // Adjust size based on your model
     uint8_t tensor_arena[kTensorArenaSize];
 } // namespace
 
@@ -48,30 +48,41 @@ void tiny_ml_task(void *pvParameters)
 {
     AppContext* ctx = (AppContext*)pvParameters;
     setupTinyML();
+    SensorData currentData;
 
     while (1)
     {
+        // Wait for new sensor data (blocks until data arrives)
+        if (xQueueReceive(xSensorDataQueue, &currentData, portMAX_DELAY) == pdPASS) {
+            
+            // Normalize inputs
+            float norm_temp = (currentData.temperature - 0.0) / (50.0 - 0.0); 
+            float norm_hum = (currentData.humidity - 0.0) / (100.0 - 0.0);
 
-        // Prepare input data (e.g., sensor readings)
-        // For a simple example, let's assume a single float input
-        xSemaphoreTake(ctx->mutex, portMAX_DELAY);
-        input->data.f[0] = ctx->temperature;
-        input->data.f[1] = ctx->humidity;
-        xSemaphoreGive(ctx->mutex);
+            // Prepare input data
+            input->data.f[0] = norm_temp;
+            input->data.f[1] = norm_hum;
 
-        // Run inference
-        TfLiteStatus invoke_status = interpreter->Invoke();
-        if (invoke_status != kTfLiteOk)
-        {
-            error_reporter->Report("Invoke failed");
-            return;
+            // Run inference
+            TfLiteStatus invoke_status = interpreter->Invoke();
+            if (invoke_status != kTfLiteOk)
+            {
+                error_reporter->Report("Invoke failed");
+                continue;
+            }
+
+            // Get and process output
+            float result = output->data.f[0];
+            bool isAnomaly = (result > 0.75); // 75% threshold
+            
+            Serial.print("Inference result: ");
+            Serial.print(result);
+            Serial.print(" Anomaly: ");
+            Serial.println(isAnomaly ? "YES" : "NO");
+
+            // Send result to other tasks
+            xQueueSend(xAnomalyQueueLCD, &isAnomaly, 0); 
+            xQueueSend(xAnomalyQueueIOT, &isAnomaly, 0);
         }
-
-        // Get and process output
-        float result = output->data.f[0];
-        Serial.print("Inference result: ");
-        Serial.println(result);
-
-        vTaskDelay(5000);
     }
 }

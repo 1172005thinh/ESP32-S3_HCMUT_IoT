@@ -81,15 +81,25 @@
     <!-- THIẾT BỊ -->
     <div id="device" class="section" style="display:none;">
       <header>
-        <h1>Điều khiển Relay</h1>
-        <p>Quản lý và điều khiển các relay được kết nối.</p>
+        <h1>Điều khiển Thiết Bị</h1>
+        <p>Quản lý và điều khiển hai thiết bị Relay cố định: LED 1 và LED 2.</p>
       </header>
 
-      <div class="device-list" id="relayContainer"></div>
+      <div class="control-panel">
+        <div class="device-card">
+          <i class="fa-solid fa-lightbulb device-icon" style="color: #4ade80;"></i>
+          <h3>LED 1 (Phòng Khách)</h3>
+          <button id="btn-device-1" class="btn btn-primary toggle-btn">Bật / Tắt LED 1</button>
+          <div class="status-indicator" id="status-device-1">Trạng thái: Máy Cục Bộ</div>
+        </div>
 
-      <button class="add-relay-btn" onclick="openAddRelayDialog()">
-        <i class="fa-solid fa-plus"></i>
-      </button>
+        <div class="device-card">
+          <i class="fa-solid fa-lightbulb device-icon" style="color: #f87171;"></i>
+          <h3>LED 2 (Phòng Ngủ)</h3>
+          <button id="btn-device-2" class="btn btn-secondary toggle-btn">Bật / Tắt LED 2</button>
+          <div class="status-indicator" id="status-device-2">Trạng thái: Máy Cục Bộ</div>
+        </div>
+      </div>
     </div>
 
     <!-- THÔNG TIN -->

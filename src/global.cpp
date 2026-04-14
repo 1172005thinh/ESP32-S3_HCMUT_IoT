@@ -6,3 +6,4 @@
 QueueHandle_t xSensorDataQueue;
 QueueHandle_t xAnomalyQueueLCD;
 QueueHandle_t xAnomalyQueueIOT;
+QueueHandle_t xDeviceCommandQueue;

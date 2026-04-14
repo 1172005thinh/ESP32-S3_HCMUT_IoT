@@ -101,9 +101,11 @@ void reconnect(AppContext* ctx) {
     // ThingsBoard/CoreIoT uses the Access Token as the MQTT username
     if (client.connect(clientId.c_str(), token.c_str(), NULL)) {
         
+      Serial.println("=================================");
       Serial.println("[SUCCESS] Connected to CoreIOT Server!");
       client.subscribe("v1/devices/me/rpc/request/+");
       Serial.println("[SUCCESS] Subscribed to v1/devices/me/rpc/request/+");
+      Serial.println("=================================");
 
     } else {
       int state = client.state();

@@ -43,8 +43,14 @@ struct SensorData {
     float humidity;
 };
 
+// Struct to hold device toggle commands from WebServer for Task 4
+struct DeviceCommand {
+    int device_id; // 1 for LED1/Relay1, 2 for LED2/Relay2
+};
+
 extern QueueHandle_t xSensorDataQueue;
 extern QueueHandle_t xAnomalyQueueLCD;
 extern QueueHandle_t xAnomalyQueueIOT;
+extern QueueHandle_t xDeviceCommandQueue;
 
 #endif

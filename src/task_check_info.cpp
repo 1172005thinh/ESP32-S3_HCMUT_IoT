@@ -27,9 +27,15 @@ void Load_info_File(AppContext* ctx)
 
 void Delete_info_File()
 {
+  Serial.println("[SYS] Executing Delete_info_File()...");
   if (LittleFS.exists("/info.dat"))
   {
+    Serial.println("[SYS] /info.dat found. Removing...");
     LittleFS.remove("/info.dat");
+    Serial.println("[SYS] File removed. Restarting ESP...");
+  }
+  else {
+    Serial.println("[WARN] /info.dat not found. Restarting anyway...");
   }
   ESP.restart();
 }

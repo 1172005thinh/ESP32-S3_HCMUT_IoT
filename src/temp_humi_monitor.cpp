@@ -68,6 +68,7 @@ void temp_humi_monitor(void *pvParameters){
         }
 
         // Print the results
+        Serial.println("[SENSOR] ");
         Serial.print("Humidity: ");
         Serial.print(humidity);
         Serial.print("%  Temperature: ");

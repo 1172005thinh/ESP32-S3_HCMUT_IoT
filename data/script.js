@@ -146,66 +146,23 @@ window.onload = function () {
 
 
 // ==================== DEVICE FUNCTIONS ====================
-function openAddRelayDialog() {
-    document.getElementById('addRelayDialog').style.display = 'flex';
-}
-function closeAddRelayDialog() {
-    document.getElementById('addRelayDialog').style.display = 'none';
-}
-function saveRelay() {
-    const name = document.getElementById('relayName').value.trim();
-    const gpio = document.getElementById('relayGPIO').value.trim();
-    if (!name || !gpio) return alert("[ERR] Please fill in all fields!");
-    relayList.push({ id: Date.now(), name, gpio, state: false });
-    renderRelays();
-    closeAddRelayDialog();
-}
-function renderRelays() {
-    const container = document.getElementById('relayContainer');
-    container.innerHTML = "";
-    relayList.forEach(r => {
-        const card = document.createElement('div');
-        card.className = 'device-card';
-        card.innerHTML = `
-      <i class="fa-solid fa-bolt device-icon"></i>
-      <h3>${r.name}</h3>
-      <p>GPIO: ${r.gpio}</p>
-      <button class="toggle-btn ${r.state ? 'on' : ''}" onclick="toggleRelay(${r.id})">
-        ${r.state ? 'ON' : 'OFF'}
-      </button>
-      <i class="fa-solid fa-trash delete-icon" onclick="showDeleteDialog(${r.id})"></i>
-    `;
-        container.appendChild(card);
-    });
-}
-function toggleRelay(id) {
-    const relay = relayList.find(r => r.id === id);
-    if (relay) {
-        relay.state = !relay.state;
-        const relayJSON = JSON.stringify({
-            page: "device",
-            value: {
-                name: relay.name,
-                status: relay.state ? "ON" : "OFF",
-                gpio: relay.gpio
-            }
-        });
-        Send_Data(relayJSON);
-        renderRelays();
-    }
-}
-function showDeleteDialog(id) {
-    deleteTarget = id;
-    document.getElementById('confirmDeleteDialog').style.display = 'flex';
-}
-function closeConfirmDelete() {
-    document.getElementById('confirmDeleteDialog').style.display = 'none';
-}
-function confirmDelete() {
-    relayList = relayList.filter(r => r.id !== deleteTarget);
-    renderRelays();
-    closeConfirmDelete();
-}
+document.getElementById('btn-device-1').addEventListener('click', () => {
+    const payload = { command: "toggle", device: 1 };
+    Send_Data(JSON.stringify(payload));
+    
+    // Simulate UI feedback immediately for reactivity
+    const btn = document.getElementById('btn-device-1');
+    btn.classList.toggle('on');
+});
+
+document.getElementById('btn-device-2').addEventListener('click', () => {
+    const payload = { command: "toggle", device: 2 };
+    Send_Data(JSON.stringify(payload));
+    
+    // Simulate UI feedback immediately for reactivity
+    const btn = document.getElementById('btn-device-2');
+    btn.classList.toggle('on');
+});
 
 
 // ==================== SETTINGS FORM (BỔ SUNG) ====================

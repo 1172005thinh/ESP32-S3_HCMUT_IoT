@@ -1,4 +1,5 @@
 #include <task_handler.h>
+#include "global.h"
 
 void handleWebSocketMessage(String message)
 {
@@ -12,6 +13,15 @@ void handleWebSocketMessage(String message)
         return;
     }
     JsonObject value = doc["value"];
+    if (doc["command"] == "toggle")
+    {
+        DeviceCommand cmd;
+        cmd.device_id = doc["device"];
+        xQueueSend(xDeviceCommandQueue, &cmd, 0);
+        Serial.printf("[MSG] Received toggle command for device %d\n", cmd.device_id);
+        return;
+    }
+
     if (doc["page"] == "device")
     {
         if (!value.containsKey("gpio") || !value.containsKey("status"))

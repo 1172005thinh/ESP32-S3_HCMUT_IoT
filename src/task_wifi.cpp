@@ -67,7 +67,9 @@ bool Wifi_reconnect(AppContext* ctx)
     }
 
     // Connection failed for X = 120 attempts, revert to AP mode
+    Serial.println("===============================");
     Serial.println("[SYS] Failed to connect to STA. Reverting back to AP mode.");
+    Serial.println("===============================");
     WiFi.disconnect(true); // Disconnect existing STA session before mode switch
     vTaskDelay(100 / portTICK_PERIOD_MS);
     startAP();

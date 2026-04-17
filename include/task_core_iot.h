@@ -1,0 +1,14 @@
+#ifndef __TASK_CORE_IOT_H__
+#define __TASK_CORE_IOT_H__
+
+#include <WiFi.h>
+#include <ThingsBoard.h>
+#include <Arduino_MQTT_Client.h>
+#include <HTTPClient.h>
+#include "task_check_info.h"
+#include "global.h"
+
+void CORE_IOT_sendata(AppContext* ctx, String mode, String feed, String data);
+void CORE_IOT_reconnect(AppContext* ctx);
+
+#endif
